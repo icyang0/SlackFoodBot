@@ -2,6 +2,12 @@ import requests
 import boto3
 from datetime import datetime, timedelta
 
+#hook for BAD button
+#https://hooks.slack.com/services/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
+
+#hook for GOOD button
+#https://hooks.slack.com/services/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
+
 
 def handler(event, context):
 
@@ -26,15 +32,28 @@ def handler(event, context):
      #TESTING ONLY DELETE ME    
    # lastGoodDate = 13
     
-    #check the date of the last known press of the good button
-    #if the good button hasnt been pressed today, reset it to 1 (since it's just been pressed)
+    # #check the date of the last known press of the good button
+    # #if the good button hasnt been pressed today, reset it to 1 (since it's just been pressed)
+    # #also update the last known date of button press
+    # if todaysDay != lastGoodDate:
+        # goodTotal = 1
+        # lastGoodDate = todaysDay
+    # #if good button has already been pressed today, then add one to the count, but dont need to update the date
+    # else:
+        # goodTotal = 1 + goodTotal
+		
+		
+    #check the date of the last known press of the bad button
+    #if the bad button hasnt been pressed today, reset it to 1 (since it's just been pressed)
     #also update the last known date of button press
     if todaysDay != lastGoodDate:
-        goodTotal = 1
-        lastGoodDate = todaysDay
+        badTotal = 1
+        lastBadDate = todaysDay
     #if good button has already been pressed today, then add one to the count, but dont need to update the date
     else:
-        goodTotal = 1 + goodTotal
+        badTotal = 1 + badTotal		
+		
+	
         
    
     
@@ -43,5 +62,8 @@ def handler(event, context):
 
     
 
-    
-    requests.post('https://hooks.slack.com/services/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',json={"text" : ':heart: : ' + str(goodTotal) })
+    #post to slack for GOOD
+  #  requests.post('https://hooks.slack.com/services/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',json={"text" : 'Today\'s lunch :heart: : ' + str(goodTotal) })
+	
+	#post to slack for GOOD
+    requests.post('https://hooks.slack.com/services/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',json={"text" : 'Today\'s lunch :nauseated_face: : ' + badTotal })
