@@ -1,6 +1,7 @@
 import requests
 import boto3
 from datetime import datetime, timedelta
+import calendar
 
 #hook for BAD button
 #https://hooks.slack.com/services/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
@@ -14,9 +15,12 @@ def handler(event, context):
     dynamodb = boto3.client('dynamodb')
     
     #get current PST time
-    todaysDay = str(datetime.now() -  timedelta(hours=7))
+    todaysDayGoop = datetime.now() -  timedelta(hours=7)
+    todaysDay = str(todaysDayGoop)
     
-    #strip out all the other stuff and only save the day
+    dayOfWeek = calendar.day_name[todaysDayGoop.weekday()]
+    
+    #strip out all the other stuff and only save the date
     todaysDay = todaysDay[0:10]
     
     #grab the latest info from the table
@@ -29,9 +33,9 @@ def handler(event, context):
     keyIndex = item['theKeyIGuess']['S']
     
  
-    
-     #TESTING ONLY DELETE ME    
-   # lastGoodDate = 13
+    #if todays date doesnt match last known press of both good and bad button, then it's time to archive the yesterday
+    if (todaysDay != lastBadDate) and (todaysDay != lastGoodDate):
+        dynamodb.put_item(TableName='slackFoodBot', Item={'foodGood':{'N':str(goodTotal)},'foodBad':{'N':str(badTotal)}, 'goodDate':{'S':lastGoodDate}, 'badDate':{'S':lastBadDate}, 'theKeyIGuess':{'S':lastBadDate}})
     
     # #check the date of the last known press of the good button
     # #if the good button hasnt been pressed today, reset it to 1 (since it's just been pressed)
@@ -65,7 +69,7 @@ def handler(event, context):
     
 
     #post to slack for GOOD
-  #  requests.post('https://hooks.slack.com/services/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',json={"text" : 'Today\'s lunch :heart: : ' + str(goodTotal) })
+  #  requests.post('https://hooks.slack.com/services/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',json={"text" : dayOfWeek + ' ' + todaysDay + ' number of :heart: : ' + str(goodTotal) })
 	
-	#post to slack for GOOD
-    requests.post('https://hooks.slack.com/services/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',json={"text" : 'Today\'s lunch :nauseated_face: : ' + str(badTotal) })
+	#post to slack for BAD
+    requests.post('https://hooks.slack.com/services/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',json={"text" : dayOfWeek + ' ' + todaysDay + ' number of :nauseated_face: : ' + str(badTotal) })
